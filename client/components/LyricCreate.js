@@ -1,36 +1,36 @@
 import React, { Component } from 'react';
 import gql from 'graphql-tag';
-import { graphql } from 'react-apollo';
+import { useMutation } from '@apollo/react-hooks';
 
+import { useForm } from '../hooks/useForm';
 import fetchSong from '../queries/fetchSong';
 
-class LyricCreate extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {content:''};
-  }
+const LyricCreate = ({ songId }) => { 
 
-  onSubmit(event) {
-    event.preventDefault();
-
-    this.props.mutate({
+  const onSubmit = () => {
+    addNewLyric({
       variables:{
-        content: this.state.content,
-        songId: this.props.songId}
-    }).then(() => this.setState({content:''}));
-  }
+        content: inputs.lyricContent,
+        songId},
+      refetchQueries: [{ query: fetchSong, variables:{id:songId}}]
+    });
+  };
 
-  render() {
+  const [addNewLyric, {data}] = useMutation(mutation);
+  const { inputs, handleInputChange, handleSubmit } = useForm(onSubmit);
+  
     return (
-      <form onSubmit={this.onSubmit.bind(this)}>
+      <form onSubmit={handleSubmit}>
         <label>Add a lyric</label>
         <input
-           value={this.state.content}
-           onChange={event => this.setState({ content: event.target.value})}
+           type="text"
+           name="lyricContent"
+           value={inputs.lyricContent || ""}
+           onChange={handleInputChange}
         />
       </form>
     );
-  }
+  
 }
 
 const mutation = gql`
@@ -46,4 +46,4 @@ const mutation = gql`
   }
 `;
 
-export default graphql(mutation)(LyricCreate);
+export default LyricCreate;

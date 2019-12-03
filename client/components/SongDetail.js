@@ -1,29 +1,27 @@
-import React, { Component } from 'react';
-import { graphql } from 'react-apollo';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@apollo/react-hooks';
 import { Link } from 'react-router-dom';
 
 import fetchSong from '../queries/fetchSong';
 import LyricCreate from './LyricCreate';
 import LyricList from './LyricList';
 
-function SongDetail(props) {
+const SongDetail = (props) => {
+  const id = props.match.params.id;
+  const { loading, error, data, refetch } = useQuery(fetchSong, {variables: { id }});
 
-  if (props.data.loading) {
-    return <div>Loading...</div>
-  }
-  console.log(props);
-  const { song } = props.data;
+  if (loading) {
+    return <div>Loadng ...</div>
+  };
 
   return (
     <div>
       <Link to="/">Back</Link>
-      <h3>{ song.title }</h3>
-      <LyricList lyrics={ song.lyrics }/>
-      <LyricCreate songId={ props.match.params.id }/>
+      <h3>{ data.song.title }</h3>
+      <LyricList lyrics={ data.song.lyrics }/>
+      <LyricCreate songId={ id }/>
     </div>);
 
 }
 
-export default graphql(fetchSong, {
-  options: (props) => { return { variables: { id: props.match.params.id } } }
-})(SongDetail);
+export default SongDetail;

@@ -1,27 +1,31 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import gql from 'graphql-tag';
-import { graphql } from 'react-apollo';
+import { graphql, useQuery, useMutation } from 'react-apollo';
 import { Link } from 'react-router-dom';
 import fetchSongs from '../queries/fetchSongs';
  
 
-class SongList extends Component {
+const SongList = () => {
+  const { loading, error, data, refetch } = useQuery(fetchSongs);
+  const [songList, setSongList] = useState({
+    title: "Loading...", id: "00000"
+  });
+  const [deleteSong] = useMutation(mutation);
 
-  onSongDelete(id) {
-    this.props.mutate({
+  const onSongDelete = (id) => {
+    deleteSong({
       variables:{id},
       refetchQueries: [{query: fetchSongs}]
     });
   }
 
-  renderSongs() {
-    if (this.props.data.loading) {
+  const renderSongs = () => {
+    if (loading) {
       return (
         <div>Loading...</div>
       );
-    }
-    else {
-      return this.props.data.songs.map(song => {
+    } else {
+      return data.songs.map(song => {
         return (
           <li 
             key={song.id} 
@@ -29,21 +33,18 @@ class SongList extends Component {
               <Link to={`/songs/${song.id}`}>{song.title}</Link>
               <i
                 className="material-icons"
-                onClick={() => this.onSongDelete(song.id)} 
+                onClick={() => onSongDelete(song.id)} 
               >delete</i>
           </li>
         );
       });
-    }
-    
-  }
-
-  render() {
+    };
+  };
     
     return (
       <div>
       <ul className="collection">
-        {this.renderSongs()}
+        {renderSongs()}
       </ul>
       <Link
         to="/songs/new" 
@@ -53,7 +54,7 @@ class SongList extends Component {
       </Link>
       </div>
     );
-  }
+  
 }
 
 const mutation = gql`

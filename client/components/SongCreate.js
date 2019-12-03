@@ -1,50 +1,51 @@
-import React, { Component } from 'react';
+import React from 'react';
 import gql from 'graphql-tag';
-import { graphql } from 'react-apollo';
-import { Link, withRouter } from 'react-router-dom';
+import { useMutation } from 'react-apollo';
+import { Link } from 'react-router-dom';
+
+import { useForm } from '../hooks/useForm';
 import fetchSongs from '../queries/fetchSongs';
 
-class SongCreate extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {title: ''}
-  }
-
-  onSubmit(event) {
+const SongCreate = (props) => {
+  
+  const onSubmit = () => {
     event.preventDefault();
     
-    this.props.mutate({
+    addNewSong({
       variables: {
-        title: this.state.title
+        title: inputs.songTitle
       },
       refetchQueries: [{query: fetchSongs}]
-    }).then(() => this.props.history.push('/')) ;
-  }
-
-  render() {
-    return (
-      <div>
-        <Link to="/">Back</Link>
-        <h3>Create a new song</h3>
-        <form onSubmit={this.onSubmit.bind(this)}>
-          <label>Song Title:</label>
-          <input
-            onChange = {event => this.setState({title: event.target.value})} 
-            value = {this.state.title}
-          />
-        </form>
-      </div>
-    );
-  }
-}
-
+    }).then(() => props.history.push('/')) ;
+  };
+  
+  const [addNewSong, { data }] = useMutation(mutation);
+  const { inputs, handleInputChange, handleSubmit } = useForm(onSubmit);
+  
+  return (
+    <div>
+      <Link to="/">Back</Link>
+      <h3>Create a new song</h3>
+      <form onSubmit={handleSubmit}>
+        <label>Song Title:</label>
+        <input
+          type="text"
+          name = "songTitle"
+          onChange = {handleInputChange} 
+          value = {inputs.songTitle || ""}
+        />
+      </form>
+    </div>
+  );
+    
+};
+  
 const mutation = gql`
-mutation AddSong($title: String){
-  addSong(title: $title) {
-    title
+  mutation AddSong($title: String){
+    addSong(title: $title) {
+      title
+    }
   }
-}
 `
-
-export default graphql(mutation)(withRouter(SongCreate));
+  
+export default SongCreate;
